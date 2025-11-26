@@ -7,7 +7,9 @@
 <style>
 html,body{
   margin:0;
+  padding:0;
   height:100%;
+  width:100%;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -40,7 +42,7 @@ canvas{
 }
 #touchControls{
   position:absolute;
-  bottom:20px;
+  bottom:15px;
   left:50%;
   transform:translateX(-50%);
   display:flex;
@@ -71,10 +73,13 @@ Score: <span id="score">0</span> | Lives: <span id="lives">3</span>
 <div class="touchBtn" id="fire">●</div>
 <div class="touchBtn" id="right">▶</div>
 </div>
-<canvas id="c" width="640" height="480"></canvas>
+<canvas id="c"></canvas>
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W=cv.width,H=cv.height,score=0,lives=3,wave=0,level=1,player=null,ents=[],running=false,paused=false,last=0;
+let W=window.innerWidth*0.95,H=window.innerHeight*0.7;
+cv.width=W; cv.height=H;
+
+let score=0,lives=3,wave=0,level=1,player=null,ents=[],running=false,paused=false,last=0;
 const keys={},scoreEl=document.getElementById('score'),livesEl=document.getElementById('lives');
 
 // TOUCH CONTROLS
@@ -94,10 +99,46 @@ document.addEventListener('keyup',e=>keys[e.key]=false);
 
 // PLAYER
 class Player{
-constructor(){this.x=W/2;this.y=H-40;this.r=14;this.cool=0;this.alive=true;this.power=1;this.shield=0;}
-update(dt){if(!this.alive)return;if(keys.ArrowLeft||keys.a)this.x-=260*dt;if(keys.ArrowRight||keys.d)this.x+=260*dt;this.x=Math.max(this.r,Math.min(W-this.r,this.x));this.cool-=dt;}
-draw(){if(!this.alive)return;ctx.save();ctx.translate(this.x,this.y);ctx.fillStyle='#bfefff';ctx.beginPath();ctx.moveTo(0,-14);ctx.lineTo(10,14);ctx.lineTo(-10,14);ctx.closePath();ctx.fill();if(this.shield>0){ctx.strokeStyle='rgba(0,200,255,0.25)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,this.r+6,0,2*Math.PI);ctx.stroke();}ctx.restore();}
-shoot(){if(this.cool>0)return;this.cool=0.18;if(this.power>=3){spawnBullet(this.x,this.y-18,0,-520,'player');spawnBullet(this.x-12,this.y-12,-60,-440,'player');spawnBullet(this.x+12,this.y-12,60,-440,'player');}else if(this.power>=2){spawnBullet(this.x-6,this.y-12,-20,-520,'player');spawnBullet(this.x+6,this.y-12,20,-520,'player');}else spawnBullet(this.x,this.y-18,0,-560,'player');}
+constructor(){this.x=W/2;this.y=H-50;this.r=14;this.cool=0;this.alive=true;this.power=1;this.shield=0;}
+update(dt){
+if(!this.alive) return;
+if(keys.ArrowLeft||keys.a)this.x-=260*dt;
+if(keys.ArrowRight||keys.d)this.x+=260*dt;
+this.x=Math.max(this.r,Math.min(W-this.r,this.x));
+this.cool-=dt;
+}
+draw(){
+if(!this.alive) return;
+ctx.save();
+ctx.translate(this.x,this.y);
+ctx.fillStyle='#bfefff';
+ctx.beginPath();
+ctx.moveTo(0,-14);
+ctx.lineTo(10,14);
+ctx.lineTo(-10,14);
+ctx.closePath();
+ctx.fill();
+if(this.shield>0){
+ctx.strokeStyle='rgba(0,200,255,0.25)';
+ctx.lineWidth=3;
+ctx.beginPath();
+ctx.arc(0,0,this.r+6,0,2*Math.PI);
+ctx.stroke();
+}
+ctx.restore();
+}
+shoot(){
+if(this.cool>0)return;
+this.cool=0.18;
+if(this.power>=3){
+spawnBullet(this.x,this.y-18,0,-520,'player');
+spawnBullet(this.x-12,this.y-12,-60,-440,'player');
+spawnBullet(this.x+12,this.y-12,60,-440,'player');
+}else if(this.power>=2){
+spawnBullet(this.x-6,this.y-12,-20,-520,'player');
+spawnBullet(this.x+6,this.y-12,20,-520,'player');
+}else spawnBullet(this.x,this.y-18,0,-560,'player');
+}
 }
 
 // ENEMY
@@ -115,12 +156,12 @@ draw(){ctx.fillStyle=this.tag==='player'?'#bfffdc':'#ff9b9b';ctx.beginPath();ctx
 function spawnBullet(x,y,vx,vy,tag){ents.push(new Bullet(x,y,vx,vy,tag));}
 function spawnEnemy(x,y,type){ents.push(new Enemy(x,y,type));}
 
-function startGame(){if(!player)player=new Player();running=true;paused=false;score=0;lives=3;wave=0;level=1;ents=[];player.alive=true;player.x=W/2;player.y=H-40;player.shield=0;nextWave();updateUI();}
+function startGame(){if(!player)player=new Player();running=true;paused=false;score=0;lives=3;wave=0;level=1;ents=[];player.alive=true;player.x=W/2;player.y=H-50;player.shield=0;nextWave();updateUI();}
 function pauseGame(){paused=!paused;}
 function nextWave(){wave++;level=Math.floor(wave/5)+1;let rows=Math.min(4,1+Math.floor(wave/3)),cols=Math.min(8,3+wave);let sp=W/(cols+1);for(let r=0;r<rows;r++)for(let c=1;c<=cols;c++){let t=Math.random()<0.05?2:(Math.random()<0.18?1:0);spawnEnemy(c*sp+Math.random()*10-5,-40-r*30,t);}}
 function updateUI(){scoreEl.textContent=score;livesEl.textContent=lives;}
 
-function handleCollisions(){for(let i=ents.length-1;i>=0;i--){let A=ents[i];if(A instanceof Bullet&&A.tag==='player'){for(let j=ents.length-1;j>=0;j--){let B=ents[j];if(B instanceof Enemy&&!B.dead&&Math.hypot(A.x-B.x,A.y-B.y)<A.r+B.r){B.hp--;A.dead=true;if(B.hp<=0){B.dead=true;score+=(B.type+1)*10;}}}}if(A instanceof Enemy&&player.alive&&Math.hypot(A.x-player.x,A.y-player.y)<A.r+player.r){A.dead=true;if(player.shield>0){player.shield--;}else{player.alive=false;lives--;setTimeout(()=>{if(lives>0){player.alive=true;player.x=W/2;player.y=H-40;player.shield=1;}else running=false;},700);}}}ents=ents.filter(e=>!e.dead);if(!ents.some(e=>e instanceof Enemy)&&running)nextWave();}
+function handleCollisions(){for(let i=ents.length-1;i>=0;i--){let A=ents[i];if(A instanceof Bullet&&A.tag==='player'){for(let j=ents.length-1;j>=0;j--){let B=ents[j];if(B instanceof Enemy&&!B.dead&&Math.hypot(A.x-B.x,A.y-B.y)<A.r+B.r){B.hp--;A.dead=true;if(B.hp<=0){B.dead=true;score+=(B.type+1)*10;}}}}if(A instanceof Enemy&&player.alive&&Math.hypot(A.x-player.x,A.y-player.y)<A.r+player.r){A.dead=true;if(player.shield>0){player.shield--;}else{player.alive=false;lives--;setTimeout(()=>{if(lives>0){player.alive=true;player.x=W/2;player.y=H-50;player.shield=1;}else running=false;},700);}}}ents=ents.filter(e=>!e.dead);if(!ents.some(e=>e instanceof Enemy)&&running)nextWave();}
 
 function loop(t){let dt=(t-last)/1000;last=t;if(running&&!paused){ctx.clearRect(0,0,W,H);player.update(dt);player.draw();if(keys[' ']||keys.Space)player.shoot();ents.forEach(e=>{e.update(dt);e.draw();});handleCollisions();updateUI();}requestAnimationFrame(loop);}
 
