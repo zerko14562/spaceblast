@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Space Blast Mobile+Desktop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>
 html,body{
   margin:0;
@@ -28,8 +29,8 @@ canvas{
 }
 #ui button{
   margin-left:10px;
-  padding:12px 20px;      /* agrandi le bouton */
-  font-size:18px;          /* texte plus gros */
+  padding:16px 24px;
+  font-size:20px;
   font-weight:bold;
   border-radius:8px;
   background:rgba(255,255,255,0.2);
@@ -39,21 +40,21 @@ canvas{
 }
 #touchControls{
   position:absolute;
-  bottom:15px;
+  bottom:20px;
   left:50%;
   transform:translateX(-50%);
   display:flex;
-  gap:25px; /* espace entre les boutons */
+  gap:30px;
 }
 .touchBtn{
-  width:80px;   /* boutons plus grands */
-  height:80px;
+  width:100px;
+  height:100px;
   background:rgba(255,255,255,0.25);
   border-radius:50%;
   text-align:center;
-  line-height:80px;
+  line-height:100px;
   font-weight:bold;
-  font-size:24px; /* symbole plus gros */
+  font-size:28px;
   user-select:none;
   cursor:pointer;
 }
